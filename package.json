@@ -1,19 +1,22 @@
 {
-  "name": "staubsauger",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "cf-typegen": "wrangler types"
-  },
-  "dependencies": {
-    "effect": "^3.13.0",
-    "@effect/platform": "^0.76.0"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250321.0",
-    "typescript": "^5.8.2",
-    "wrangler": "^4.9.0"
-  }
+	"name": "staubsauger",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy",
+		"cf-typegen": "wrangler types",
+		"lint": "biome check .",
+		"format": "biome format --write ."
+	},
+	"dependencies": {
+		"@effect/platform": "^0.76.0",
+		"effect": "^3.13.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.10",
+		"@cloudflare/workers-types": "^4.20250321.0",
+		"typescript": "^5.8.2",
+		"wrangler": "^4.9.0"
+	}
 }
