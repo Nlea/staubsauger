@@ -1,0 +1,3 @@
+# CLAUDE.md
+
+@FP_CLAUDE.md

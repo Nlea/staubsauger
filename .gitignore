@@ -1,0 +1,7 @@
+# Fiberplane local issue tracking
+.fp/
+
+node_modules/
+.wrangler/
+dist/
+.dev.vars
