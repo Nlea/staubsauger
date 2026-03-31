@@ -1,17 +1,23 @@
-import { Cause, Effect, Exit } from "effect"
-
-// Wird automatisch befüllt wenn wrangler secrets / KV bindings hinzugefügt werden
-export interface Env {}
+import { Cause, ConfigProvider, Effect, Exit, Layer } from "effect";
+import { AppConfig } from "./config";
 
 // TODO: wird in späteren Tasks befüllt
-const program = Effect.log("YouTube Stats Worker gestartet")
+const program = Effect.gen(function* () {
+  const config = yield* AppConfig;
+  yield* Effect.log("Config geladen: channelId =" + config.channelId);
+});
 
 export default {
-  async scheduled(_event: ScheduledEvent, _env: Env, _ctx: ExecutionContext) {
-    const exit = await Effect.runPromiseExit(program)
+  async scheduled(_event: ScheduledEvent, env: Env, _ctx: ExecutionContext) {
+    const configProvider = ConfigProvider.fromMap(new Map(Object.entries(env)));
+    const exit = await Effect.runPromiseExit(
+      Effect.provide(program, Layer.setConfigProvider(configProvider))
+    );
     if (Exit.isFailure(exit)) {
-      console.error("[staubsauger] scheduled handler failed\n" + Cause.pretty(exit.cause))
-      throw new Error("scheduled handler failed — see logs above")
+      console.error(
+        "[staubsauger] scheduled handler failed\n" + Cause.pretty(exit.cause),
+      );
+      throw new Error("scheduled handler failed — see logs above");
     }
   },
-}
+};

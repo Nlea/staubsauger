@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(fp --version)",
+      "Bash(fp tree:*)",
+      "Bash(fp init:*)",
+      "Bash(fp:*)",
+      "Read(~/.fiberplane/**)",
+      "Edit(~/.fiberplane/**)",
+      "Bash(fp issue:*)",
+      "Bash(__NEW_LINE_0bb0b7b97bc35a26__ fp issue create --title \"Phase 1: Config Service \\(Effect Config + env vars\\)\" --parent YT-msvoobgf --description \"What: Alle Konfigurationswerte typsicher über Effect Config bereitstellen:*)",
+      "Bash(__NEW_LINE_3f061c1742d8a021__ fp issue create --title \"Phase 1: Video Filtering + Ranking Logic\" --parent YT-msvoobgf --depends \"YT-oslvkebv,YT-tspwguzb\" --description \"What: Pure Logik um Videos zu filtern, gruppieren und zu ranken:*)",
+      "Bash(__NEW_LINE_fb62b3b1dd342295__ fp issue create --title \"Phase 1: Worker Entry Point + Cron Wiring\" --parent YT-msvoobgf --depends \"YT-gtefimjd,YT-aiyuasfq\" --description \"What: Cloudflare Worker scheduled handler mit Effect.runPromise:*)",
+      "Bash(__NEW_LINE_99d87ab123464fff__ fp issue create --title \"Phase 2: YouTube Analytics Service \\(Watch Time + Completion Rate\\)\" --parent YT-msvoobgf --depends \"YT-peaezhxx\" --description \"What: Effect Service für YouTube Analytics API v2:*)",
+      "Bash(fp context:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(gh auth:*)",
+      "Bash(git init:*)",
+      "Bash(git remote:*)",
+      "Bash(git fetch:*)",
+      "Skill(pr-review-toolkit:review-pr)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "fp hook detect",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
