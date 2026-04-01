@@ -3,7 +3,7 @@ import { YouTubeService } from "./services/youtube";
 
 const program = Effect.gen(function* () {
   const yt = yield* YouTubeService;
-  const videos = yield* yt.getRecentVideos(7);
+  const videos = yield* yt.getRecentVideos(30);
   const videoIds = videos.map((v) => v.id.videoId);
   const stats = yield* yt.getVideoStatistics(videoIds);
 
