@@ -15,7 +15,7 @@ export class YouTubeService extends Effect.Service<YouTubeService>()(
 			const config = yield* AppConfig;
 
 			return {
-				getRecentVideos: (youtubeChannelId: string, days: number) =>
+				getRecentVideos: (days: number) =>
 					Effect.gen(function* () {
 						const publishedAfter = new Date(
 							Date.now() - days * 24 * 60 * 60 * 1000,
@@ -23,7 +23,7 @@ export class YouTubeService extends Effect.Service<YouTubeService>()(
 						const url = `https://www.googleapis.com/youtube/v3/search?${new URLSearchParams(
 							{
 								part: "snippet",
-								channelId: youtubeChannelId,
+								channelId: config.youtubeChannelId,
 								type: "video",
 								order: "date",
 								publishedAfter,

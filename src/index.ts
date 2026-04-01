@@ -1,12 +1,10 @@
 import { Cause, ConfigProvider, Effect, Exit, Layer } from "effect";
-import { AppConfig } from "./config";
 import { YouTubeService } from "./services/youtube";
 
 // TODO: wird in späteren Tasks befüllt
 const program = Effect.gen(function* () {
   const yt = yield* YouTubeService;
-  const config = yield* AppConfig;
-  const videos = yield* yt.getRecentVideos(config.youtubeChannelId, 7);
+  const videos = yield* yt.getRecentVideos(7);
   yield* Effect.log(`Gefundene Videos: ${videos.length}`);
 });
 
