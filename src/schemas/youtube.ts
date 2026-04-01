@@ -17,6 +17,22 @@ export const SearchResponseSchema = Schema.Struct({
 	items: Schema.Array(VideoSchema),
 });
 
+export const VideoStatisticsSchema = Schema.Struct({
+	viewCount: Schema.NumberFromString,
+	likeCount: Schema.NumberFromString,
+});
+
+export type VideoStatistics = Schema.Schema.Type<typeof VideoStatisticsSchema>;
+
+export const VideosResponseSchema = Schema.Struct({
+	items: Schema.Array(
+		Schema.Struct({
+			id: Schema.String,
+			statistics: VideoStatisticsSchema,
+		}),
+	),
+});
+
 export class YouTubeApiError extends Data.TaggedError("YouTubeApiError")<{
 	message: string;
 	status?: number;

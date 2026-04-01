@@ -5,7 +5,11 @@ import {
 } from "@effect/platform";
 import { Effect, Schema } from "effect";
 import { AppConfig } from "../config";
-import { SearchResponseSchema, YouTubeApiError } from "../schemas/youtube";
+import {
+	SearchResponseSchema,
+	VideosResponseSchema,
+	YouTubeApiError,
+} from "../schemas/youtube";
 
 export class YouTubeService extends Effect.Service<YouTubeService>()(
 	"YouTubeService",
@@ -70,6 +74,59 @@ export class YouTubeService extends Effect.Service<YouTubeService>()(
 							),
 						);
 						return result.items;
+					}),
+
+				getVideoStatistics: (videoIds: string[]) =>
+					Effect.gen(function* () {
+						const url = `https://www.googleapis.com/youtube/v3/videos?${new URLSearchParams(
+							{
+								part: "statistics",
+								id: videoIds.join(","),
+								key: config.youtubeApiKey,
+							},
+						)}`;
+						const response = yield* client.get(url).pipe(
+							Effect.flatMap(HttpClientResponse.filterStatusOk),
+							Effect.mapError((e) => {
+								const status =
+									"status" in e && typeof e.status === "number"
+										? e.status
+										: undefined;
+								const cause =
+									e instanceof Error && e.cause instanceof Error
+										? e.cause.message
+										: String(e);
+								return status !== undefined
+									? new YouTubeApiError({
+											message: `YouTube API request failed: ${cause}`,
+											status,
+										})
+									: new YouTubeApiError({
+											message: `YouTube API request failed: ${cause}`,
+										});
+							}),
+						);
+						const json = yield* response.json.pipe(
+							Effect.mapError(
+								(e) =>
+									new YouTubeApiError({
+										message: `Failed to parse YouTube API response body: ${String(e)}`,
+									}),
+							),
+						);
+						const result = yield* Schema.decodeUnknown(VideosResponseSchema)(
+							json,
+						).pipe(
+							Effect.mapError(
+								(e) =>
+									new YouTubeApiError({
+										message: `YouTube API response did not match expected schema. Raw body: ${JSON.stringify(json)}. Error: ${String(e)}`,
+									}),
+							),
+						);
+						return new Map(
+							result.items.map((item) => [item.id, item.statistics]),
+						);
 					}),
 			};
 		}),

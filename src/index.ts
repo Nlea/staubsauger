@@ -1,11 +1,19 @@
 import { Cause, ConfigProvider, Effect, Exit, Layer } from "effect";
 import { YouTubeService } from "./services/youtube";
 
-// TODO: wird in späteren Tasks befüllt
 const program = Effect.gen(function* () {
   const yt = yield* YouTubeService;
   const videos = yield* yt.getRecentVideos(7);
-  yield* Effect.log(`Gefundene Videos: ${videos.length}`);
+  const videoIds = videos.map((v) => v.id.videoId);
+  const stats = yield* yt.getVideoStatistics(videoIds);
+
+  for (const video of videos) {
+    const id = video.id.videoId;
+    const s = stats.get(id);
+    yield* Effect.log(
+      `${video.snippet.title} | views: ${s?.viewCount ?? "n/a"} | likes: ${s?.likeCount ?? "n/a"}`,
+    );
+  }
 });
 
 export default {
