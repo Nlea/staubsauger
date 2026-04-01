@@ -1,4 +1,4 @@
-import { Schema, Data } from "effect";
+import { Data, Schema } from "effect";
 export const VideoSchema = Schema.Struct({
 	id: Schema.Struct({
 		kind: Schema.String,
@@ -6,7 +6,7 @@ export const VideoSchema = Schema.Struct({
 	}),
 	snippet: Schema.Struct({
 		title: Schema.String,
-		publishedAt: Schema.String,
+		publishedAt: Schema.DateFromString,
 		description: Schema.String,
 	}),
 });
