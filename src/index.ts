@@ -1,8 +1,12 @@
 import { Cause, ConfigProvider, Effect, Exit, Layer } from "effect";
+import { formatSlackMessage } from "./formatters/slack-message";
+import { SlackService } from "./services/slack";
 import { YouTubeService } from "./services/youtube";
 
 const program = Effect.gen(function* () {
   const yt = yield* YouTubeService;
+  const slack = yield* SlackService;
+
   const videos = yield* yt.getRecentVideos(30);
   const videoIds = videos.map((v) => v.id.videoId);
   if (videoIds.length === 0) {
@@ -11,13 +15,21 @@ const program = Effect.gen(function* () {
   }
   const stats = yield* yt.getVideoStatistics(videoIds);
 
-  for (const video of videos) {
-    const id = video.id.videoId;
-    const s = stats.get(id);
-    yield* Effect.log(
-      `${video.snippet.title} | views: ${s?.viewCount ?? "n/a"} | likes: ${s?.likeCount ?? "n/a"}`,
-    );
-  }
+  const videosWithStats = videos
+    .map((video) => {
+      const s = stats.get(video.id.videoId);
+      return {
+        ...video,
+        viewCount: s?.viewCount ?? 0,
+        likeCount: s?.likeCount,
+        url: `https://youtube.com/watch?v=${video.id.videoId}`,
+      };
+    })
+    .sort((a, b) => b.viewCount - a.viewCount);
+
+  const message = formatSlackMessage(videosWithStats);
+  yield* slack.postVideoStats(message);
+  yield* Effect.log(`Posted stats for ${videosWithStats.length} videos to Slack.`);
 });
 
 export default {
@@ -37,7 +49,7 @@ export default {
       Effect.provide(
         Effect.scoped(program),
         Layer.provide(
-          YouTubeService.Default,
+          Layer.mergeAll(YouTubeService.Default, SlackService.Default),
           Layer.setConfigProvider(configProvider),
         ),
       ),
