@@ -66,21 +66,24 @@ export class YouTubeService extends Effect.Service<YouTubeService>()(
 						const result = yield* Schema.decodeUnknown(SearchResponseSchema)(
 							json,
 						).pipe(
-							Effect.mapError(
-								(e) =>
-									new YouTubeApiError({
-										message: `YouTube API response did not match expected schema. Raw body: ${JSON.stringify(json)}. Error: ${String(e)}`,
-									}),
-							),
+							Effect.mapError((e) => {
+								const rawBody = JSON.stringify(json);
+								const body = rawBody.length > 500 ? rawBody.slice(0, 500) + "...[truncated]" : rawBody;
+								return new YouTubeApiError({
+									message: `YouTube API response did not match expected schema. Raw body: ${body}. Error: ${String(e)}`,
+								});
+							}),
 						);
 						return result.items;
 					}),
 
 				getVideoStatistics: (videoIds: string[]) =>
 					Effect.gen(function* () {
+						if (videoIds.length === 0) return new Map();
 						const url = `https://www.googleapis.com/youtube/v3/videos?${new URLSearchParams(
 							{
 								part: "statistics",
+								// YouTube API accepts max 50 IDs per request — batching needed if this grows
 								id: videoIds.join(","),
 								key: config.youtubeApiKey,
 							},
@@ -117,12 +120,13 @@ export class YouTubeService extends Effect.Service<YouTubeService>()(
 						const result = yield* Schema.decodeUnknown(VideosResponseSchema)(
 							json,
 						).pipe(
-							Effect.mapError(
-								(e) =>
-									new YouTubeApiError({
-										message: `YouTube API response did not match expected schema. Raw body: ${JSON.stringify(json)}. Error: ${String(e)}`,
-									}),
-							),
+							Effect.mapError((e) => {
+								const rawBody = JSON.stringify(json);
+								const body = rawBody.length > 500 ? rawBody.slice(0, 500) + "...[truncated]" : rawBody;
+								return new YouTubeApiError({
+									message: `YouTube API response did not match expected schema. Raw body: ${body}. Error: ${String(e)}`,
+								});
+							}),
 						);
 						return new Map(
 							result.items.map((item) => [item.id, item.statistics]),

@@ -5,6 +5,10 @@ const program = Effect.gen(function* () {
   const yt = yield* YouTubeService;
   const videos = yield* yt.getRecentVideos(30);
   const videoIds = videos.map((v) => v.id.videoId);
+  if (videoIds.length === 0) {
+    yield* Effect.log("No recent videos found. Skipping statistics fetch.");
+    return;
+  }
   const stats = yield* yt.getVideoStatistics(videoIds);
 
   for (const video of videos) {
