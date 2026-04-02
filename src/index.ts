@@ -1,4 +1,4 @@
-import { Cause, ConfigProvider, Effect, Exit, Layer, Logger } from "effect";
+import { Cause, ConfigProvider, Effect, Exit, Layer, Logger, Schedule } from "effect";
 import { formatSlackMessage } from "./formatters/slack-message";
 import { SlackService } from "./services/slack";
 import { YouTubeService } from "./services/youtube";
@@ -7,13 +7,17 @@ const program = Effect.gen(function* () {
   const yt = yield* YouTubeService;
   const slack = yield* SlackService;
 
-  const videos = yield* yt.getRecentVideos(30);
+  const videos = yield* yt.getRecentVideos(30).pipe(
+    Effect.retry(Schedule.exponential("1 second").pipe(Schedule.upTo("30 seconds"))),
+  );
   const videoIds = videos.map((v) => v.id.videoId);
   if (videoIds.length === 0) {
     yield* Effect.log("No recent videos found. Skipping statistics fetch.");
     return;
   }
-  const stats = yield* yt.getVideoStatistics(videoIds);
+  const stats = yield* yt.getVideoStatistics(videoIds).pipe(
+    Effect.retry(Schedule.exponential("1 second").pipe(Schedule.upTo("30 seconds"))),
+  );
 
   const videosWithStats = videos
     .map((video) => {
