@@ -1,4 +1,4 @@
-import { Cause, ConfigProvider, Effect, Exit, Layer } from "effect";
+import { Cause, ConfigProvider, Effect, Exit, Layer, Logger } from "effect";
 import { formatSlackMessage } from "./formatters/slack-message";
 import { SlackService } from "./services/slack";
 import { YouTubeService } from "./services/youtube";
@@ -52,14 +52,22 @@ export default {
         Effect.scoped(program),
         Layer.provide(
           Layer.mergeAll(YouTubeService.Default, SlackService.Default),
-          Layer.setConfigProvider(configProvider),
+          Layer.merge(
+            Layer.setConfigProvider(configProvider),
+            Logger.replace(
+              Logger.defaultLogger,
+              Logger.withLeveledConsole(Logger.stringLogger),
+            ),
+          ),
         ),
       ),
     );
     if (Exit.isFailure(exit)) {
       const errorDetail = Cause.pretty(exit.cause);
       console.error(`[staubsauger] scheduled handler failed\n${errorDetail}`);
-      throw new Error(`scheduled handler failed: ${errorDetail}`);
+      throw new Error("scheduled handler failed", {
+        cause: Cause.squash(exit.cause),
+      });
     }
   },
 };
