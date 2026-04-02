@@ -20,16 +20,18 @@ const program = Effect.gen(function* () {
       const s = stats.get(video.id.videoId);
       return {
         ...video,
-        viewCount: s?.viewCount ?? 0,
+        viewCount: s?.viewCount ?? null,
         likeCount: s?.likeCount,
         url: `https://youtube.com/watch?v=${video.id.videoId}`,
       };
     })
-    .sort((a, b) => b.viewCount - a.viewCount);
+    .sort((a, b) => (b.viewCount ?? -1) - (a.viewCount ?? -1));
 
   const message = formatSlackMessage(videosWithStats);
   yield* slack.postVideoStats(message);
-  yield* Effect.log(`Posted stats for ${videosWithStats.length} videos to Slack.`);
+  yield* Effect.log(
+    `Posted stats for ${videosWithStats.length} videos to Slack.`,
+  );
 });
 
 export default {
